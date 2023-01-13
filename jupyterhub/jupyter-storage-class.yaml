@@ -1,0 +1,8 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: jupyter-local-storage
+# For AWS EBS storage see
+# https://kubernetes.io/docs/concepts/storage/storage-classes/#aws-ebs
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer

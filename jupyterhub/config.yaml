@@ -1,0 +1,54 @@
+singleuser:
+  image:
+    # https://hub.docker.com/layers/jupyter/all-spark-notebook/hub-3.1.0/images/sha256-39cf6fcb7672e952b1b7a4ee1386d44999cc0be016df4b4595b64d12c161bd93?context=explore
+    name: jupyter/minimal-notebook
+    tag: python-3.10
+  # Multiple profiles for user selection
+  profileList:
+  - display_name: "Minimal environment"
+    description: "Basic Python environment"
+    default: true
+  - display_name: "Spark environment"
+    description: "Jupyter stack with spark image"
+    kubespawner_override:
+      image: jupyter/all-spark-notebook:hub-3.1.0
+      # TODO add auto installation of spark configurations
+      #lifecycle_hooks:
+      #  postStart:
+      #    exec:
+      #      command:
+      #      - "sh"
+  # Limits for users
+  memory:
+    limit: 1G
+    guarantee: 512M
+  cpu:
+    limit: 1
+    guarantee: .5
+  storage:
+    capacity: 2Gi # each user gets a 2G volume
+    extraVolumes:
+    - name: shm-volume
+      emptyDir:
+        medium: Memory
+    extraVolumeMounts:
+    - name: shm-volume
+      mountPath: /dev/shm
+    dynamic:
+      storageClass: jupyter-local-storage # Change to EBS for AWS backed persistent storage
+  # Extra file to configure culling settings in env
+  extraFiles:
+    jupyter_notebook_config.json:
+      mountPath: /etc/jupyter/jupyter_notebook_config.json
+      data:
+        MappingKernelManager:
+          cull_idle_timeout: 1200
+          cull_interval: 120
+          cull_connected: true
+          cull_busy: false
+  # Entry cmd commands
+  cmd: null
+# Cull old user pods to save resources
+cull:
+  enabled: true
+
